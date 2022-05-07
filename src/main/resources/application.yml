@@ -1,0 +1,25 @@
+spring:
+  profiles:
+    active: dev
+  jackson:
+    serialization:
+      indent_output: true
+  mvc:
+    async:
+      request-timeout: 60 # ms
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+---
+spring:
+  config:
+    activate:
+      on-profile: stg
+---
+spring:
+  config:
+    activate:
+      on-profile: prod

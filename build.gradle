@@ -1,0 +1,79 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.7'
+    id 'checkstyle'
+    id 'jacoco'
+}
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
+group 'pro.hirooka'
+version '1.0.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.8'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.1.0'
+    implementation 'org.flywaydb:flyway-core'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'com.h2database:h2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+checkstyle {
+    toolVersion '9.2.1'
+    configFile = file('config/checkstyle/checkstyle.xml')
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+List jacocoExcludes = [
+        'example/domain/dto/*',
+        'example/Application.class'
+]
+
+jacocoTestReport {
+    dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: jacocoExcludes)
+        }))
+    }
+    finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestCoverageVerification {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: jacocoExcludes)
+        }))
+    }
+    violationRules {
+        rule {
+            enabled = false
+            limit {
+                minimum = 0.6
+                // https://testing.googleblog.com/2020/08/code-coverage-best-practices.html
+                // https://testing.googleblog.com/2014/07/measuring-coverage-at-google.html
+            }
+        }
+    }
+}
